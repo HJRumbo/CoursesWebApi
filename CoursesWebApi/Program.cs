@@ -1,6 +1,6 @@
 using Business;
+using CoursesWebApi.Middlewares;
 using DataAccess;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +44,9 @@ app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// Add the ErrorHandlerMiddleware 
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.MapControllers();
 

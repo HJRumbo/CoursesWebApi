@@ -1,12 +1,13 @@
-﻿using Business.Dtos;
-using Entity;
+﻿using Business.Common;
+using Business.Dtos;
 
 namespace Business.Interfaces
 {
     public interface IStudentService
     {
-        Task<List<Student>> GetAllStudents();
-        Task<Student?> GetStudentById(int studentId);
-        Task<bool> RegisterCourse(RegistrationCourseDto registrationCourseDto);
+        Task<List<StudentDto>> GetAllStudents();
+        Task<StudentDto?> GetStudentById(int studentId);
+        Task<Response<bool>> RegisterCourse(StudentCourseDto registrationCourseDto);
+        Task<Response<bool>> RemoveCourse(StudentCourseDto registrationCourseDto);
     }
 }

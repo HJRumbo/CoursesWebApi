@@ -2,7 +2,7 @@
 
 namespace Business.Dtos
 {
-    public class RegistrationCourseDto
+    public class StudentCourseDto
     {
         [Required(ErrorMessage = "El código del estudiante es requerido")]
         public int StudentId { get; set; }

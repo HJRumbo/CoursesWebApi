@@ -1,8 +1,9 @@
-﻿using Business.Dtos;
+﻿using Business.Common;
+using Business.Dtos;
+using Business.Exceptions;
 using Business.Interfaces;
 using DataAccess.Interfaces;
 using Entity;
-using System.Linq;
 
 namespace Business.Services
 {
@@ -17,33 +18,91 @@ namespace Business.Services
             _courseRepository = courseRepository;
         }
 
-        public async Task<List<Student>> GetAllStudents()
+        public async Task<List<StudentDto>> GetAllStudents()
         {
-            return await _strudentRepository.GetAll();
-        }
+            var students = await _strudentRepository.GetAll();
 
-        public async Task<Student?> GetStudentById(int studentId)
-        {
-            return await _strudentRepository.GetById(studentId)!;
-
-        }
-
-        public async Task<bool> RegisterCourse(RegistrationCourseDto registrationCourseDto)
-        {
-            var student = await _strudentRepository.GetById(registrationCourseDto.StudentId);
-
-            var course = await _courseRepository.GetById(registrationCourseDto.CourseId);
-
-            var registredCourse = student.Courses.Where(c => c.Id == registrationCourseDto.CourseId).Count() > 0;
-
-            if (registredCourse)
+            return students.Select(s => new StudentDto()
             {
-                throw new Exception("Ya está registrado. ");
+                Id = s.Id,
+                Name = s.Name,
+                LastName = s.LastName,
+                Email = s.Email,
+                Identification = s.Identification
+            }).ToList();
+        }
+
+        public async Task<StudentDto?> GetStudentById(int studentId)
+        {
+            var student = await _strudentRepository.GetById(studentId)!;
+
+            return student != null ? new StudentDto()
+            {
+                Id = student.Id,
+                Name = student.Name,
+                LastName = student.LastName,
+                Email = student.Email,
+                Identification = student.Identification
+            } : new StudentDto();
+
+        }
+
+        public async Task<Response<bool>> RegisterCourse(StudentCourseDto registrationCourseDto)
+        {
+            var (student, course) = await ValidateData(registrationCourseDto);
+
+            if (IsRegistredCourse(student, course))
+            {
+                throw new BadRequestException($"El estudiante {student.Name} {student.LastName} ya se encuentra registrado en el curso {course.Name}. ");
             }
 
             student.Courses.Add(course);
 
-            return await _strudentRepository.Update(student) != null;
+            return new Response<bool>()
+            {
+                Data = await _strudentRepository.Update(student) != null,
+                Message = "Se registró correctamente al estudiante en el curso. ",
+                Successed = true
+            };
+        }
+
+        public async Task<Response<bool>> RemoveCourse(StudentCourseDto registrationCourseDto)
+        {
+            var (student, course) = await ValidateData(registrationCourseDto);
+
+            var registredCourse = IsRegistredCourse(student, course);
+
+            if (!registredCourse)
+            {
+                throw new BadRequestException($"El estudiante {student.Name} {student.LastName} no se encuentra registrado en el curso {course.Name}. ");
+            }
+
+            student.Courses.Remove(course);
+
+            return new Response<bool>()
+            {
+                Data = await _strudentRepository.Update(student) != null,
+                Message = "Se removió correctamente al estudiante del curso. ",
+                Successed = true
+            };
+        }
+
+        private async Task<(Student, Course)> ValidateData(StudentCourseDto registrationCourseDto)
+        {
+            var student = await _strudentRepository.GetById(registrationCourseDto.StudentId)
+                ?? throw new BadRequestException($"No se encontró el estudiante con el código {registrationCourseDto.StudentId}. ");
+
+            var course = await _courseRepository.GetById(registrationCourseDto.CourseId)
+                ?? throw new BadRequestException($"No se encontró el curso con el código {registrationCourseDto.CourseId}. ");
+
+
+            return (student, course);
+        }
+
+        private static bool IsRegistredCourse(Student student, Course course)
+        {
+
+            return student.Courses.Exists(c => c.Id == course.Id);
         }
     }
 }

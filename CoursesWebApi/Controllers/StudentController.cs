@@ -27,10 +27,18 @@ namespace CoursesWebApi.Controllers
             return Ok(await _studentService.GetStudentById(studentId));
         }
 
-        [HttpPost]
-        public async Task<IActionResult> RegisterCourse(RegistrationCourseDto registrationCourseDto)
+        [HttpPut("RegisterCourse")]
+        public async Task<IActionResult> RegisterCourse(StudentCourseDto studentCourseDto)
         {
-            var response = await _studentService.RegisterCourse(registrationCourseDto);
+            var response = await _studentService.RegisterCourse(studentCourseDto);
+
+            return Ok(response);
+        }
+
+        [HttpPut("RemoveCourse")]
+        public async Task<IActionResult> RemoveCourse(StudentCourseDto studentCourseDto)
+        {
+            var response = await _studentService.RemoveCourse(studentCourseDto);
 
             return Ok(response);
         }

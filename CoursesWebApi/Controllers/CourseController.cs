@@ -1,5 +1,4 @@
 ﻿using Business.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoursesWebApi.Controllers
@@ -15,10 +14,16 @@ namespace CoursesWebApi.Controllers
             _courseService = courseService;
         }
 
-        [HttpGet("{studentId}")]
+        [HttpGet("GetStudentCourses/{studentId}")]
         public async Task<IActionResult> GetCoursesByStudentId(int studentId)
         {
             return Ok(await _courseService.GetCoursesByStudentId(studentId));
+        }
+
+        [HttpGet("GetAvailableCourses/{studentId}")]
+        public async Task<IActionResult> GetAvailableCourses(int studentId)
+        {
+            return Ok(await _courseService.GetAvailableCourses(studentId));
         }
     }
 }

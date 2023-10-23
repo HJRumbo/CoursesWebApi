@@ -19,12 +19,26 @@ namespace Business.Services
         {
             var course = await _courseRepository.GetById(courseId);
 
-            return new CourseDto()
+            return course == null ? new CourseDto() : new CourseDto()
             {
                 Id = course.Id,
                 Name = course.Name
             };
         }
+
+        public async Task<List<CourseDto>> GetAvailableCourses(int studentId)
+        {
+            var student = await _studentRepository.GetById(studentId);
+
+            var courses = await _courseRepository.GetAvailableCourses(student);
+
+            return courses.Select(c => new CourseDto()
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).ToList();
+        }
+
 
         public async Task<List<CourseDto>> GetCoursesByStudentId(int studentId)
         {
